@@ -2,6 +2,9 @@ const express = require('express');
 // const fs = require('fs');
 const morgan = require('morgan');
 
+const AppError = require('./utils/appError');
+const globalErrorHandler = require('./controlers/errorControler');
+
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 
@@ -18,10 +21,10 @@ app.use(express.json());
 //Serving Static Files
 app.use(express.static(`${__dirname}/public`))
 
-app.use((req, res, next) => {
-    console.log('Hello Middleware');
-    next();
-})
+// app.use((req, res, next) => {
+//     console.log('Hello Middleware');
+//     next();
+// })
 
 app.use((req, res, next) => {
     req.requestTime = new Date().toISOString();
@@ -179,6 +182,19 @@ app.use((req, res, next) => {
 // const userRouter = express.Router();
 app.use('/api/v1/tours', tourRouter)
 app.use('/api/v1/users', userRouter)
+
+// Unhandled Routes Error
+app.all('*', (req, res, next) => {
+
+    // const err = new Error(`Can find ${req.originalUrl} on the server`)
+    // err.status = 'fail';
+    // err.statusCode = 404;
+
+    next(new AppError(`Can find ${req.originalUrl} on the server`, 404));
+});
+
+// By using err, Express will recognize it as a error handler middleware
+app.use(globalErrorHandler);
 
 // tourRouter
 //     .route('/')
